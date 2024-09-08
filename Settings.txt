@@ -1,0 +1,1 @@
+indripath=/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/indri-5.11/bin
