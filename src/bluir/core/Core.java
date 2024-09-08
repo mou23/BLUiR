@@ -206,8 +206,8 @@ public class Core {
 	public void process() {
 		if (!createQueryIndex())
 			return;
-//		if (!createDocs())
-//			return;
+		if (!createDocs())
+			return;
 //		if (!index())
 //			return;
 //		if (!retrieve())
