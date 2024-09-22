@@ -261,6 +261,7 @@ public class Core {
 				if (!indexDir.mkdirs())
 					throw new Exception();
 
+			// todo: this path must be changed for each device accordingly
 			// Paths to the stopwords and fields files
 			String stopwordsFile = "/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/stopwords";
 			String fieldsFile = "/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/fields";
@@ -318,9 +319,10 @@ public class Core {
 		try {
 
 			// Docker command to run IndriRunQuery inside the Docker container
-			String command = "docker run --rm -v " + queryFilePath + ":/query -v " + indexLocation + ":/index -v "
-					+ indriQueryResult + ":/result roynirmal/pyndri "
-					+ "IndriRunQuery /query -count=" + topN + " -index=/index -trecFormat=true -rule=method:tfidf,k1:1.0,b:0.3";
+			String command = "";
+
+			System.out.println("command");
+			System.out.println(command);
 
 			bw = new BufferedWriter(new FileWriter(this.indriQueryResult));
 
