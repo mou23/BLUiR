@@ -128,38 +128,6 @@ public class CustomIndriIndexer {
         }
     }
 
-    // Load the inverted index from a file
-    @SuppressWarnings("unchecked")
-    public void loadIndexFromFile(String filePath) throws IOException, ClassNotFoundException {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
-            invertedIndex = (Map<String, Map<String, List<Integer>>>) ois.readObject();
-        }
-    }
-
-    // Query the index for a single token
-    public List<String> queryIndex(String token) {
-        token = token.toLowerCase();
-        if (invertedIndex.containsKey(token)) {
-            return new ArrayList<>(invertedIndex.get(token).keySet());
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    // Query for multiple tokens
-    public Map<String, List<Integer>> queryIndexMultipleTokens(String[] tokens) {
-        Map<String, List<Integer>> results = new HashMap<>();
-        for (String token : tokens) {
-            token = token.toLowerCase();
-            if (invertedIndex.containsKey(token)) {
-                for (String docNo : invertedIndex.get(token).keySet()) {
-                    results.putIfAbsent(docNo, new ArrayList<>());
-                    results.get(docNo).addAll(invertedIndex.get(token).get(docNo));
-                }
-            }
-        }
-        return results;
-    }
 
     public static void main(String[] args) throws Exception {
         CustomIndriIndexer indexer = new CustomIndriIndexer();

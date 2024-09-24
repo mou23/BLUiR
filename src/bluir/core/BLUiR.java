@@ -10,7 +10,7 @@ public class BLUiR {
 	public static void main(String[] args) {
 		args = new String[8];
 		args[0]="-b";
-		args[1]="/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/data/dataset/Eclipse_Platform_UI.xml";
+		args[1]="/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/data/dataset/A_platform_one.xml";
 		args[2]="-s";
 		args[3]="/Users/armin/Desktop/platform/eclipse.platform.ui";
 		args[4]="-w";
