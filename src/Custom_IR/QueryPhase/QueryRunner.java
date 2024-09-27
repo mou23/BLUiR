@@ -83,32 +83,48 @@ public class QueryRunner {
     private static void executeQueries(IndexSearcher searcher, Analyzer analyzer, List<QueryData> queries, int count, Set<String> fields, String runTag) throws Exception {
         String[] fieldsArray = fields.toArray(new String[0]);
 
+        // Increase the max clause count
+        BooleanQuery.setMaxClauseCount(10000); // Adjust the number as needed
+
         for (QueryData queryData : queries) {
             String queryNumber = queryData.getNumber();
             String queryText = queryData.getText();
 
             // Create a new file for the query results, named with the queryNumber
+            if (queryNumber.length() > 10){
+                System.out.println(queryNumber);
+            }
+
             File resultsFile = new File(Paths.get(resultLocation, queryNumber + ".txt").toString());
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(resultsFile))) {
 
                 MultiFieldQueryParser parser = new MultiFieldQueryParser(fieldsArray, analyzer);
-                Query query = parser.parse(QueryParser.escape(queryText));
 
-                TopDocs topDocs = searcher.search(query, count);
-                ScoreDoc[] hits = topDocs.scoreDocs;
+                try {
+                    Query query = parser.parse(QueryParser.escape(queryText));
 
-                for (int i = 0; i < hits.length; i++) {
-                    Document doc = searcher.doc(hits[i].doc);
-                    String docId = doc.get("docId");
-                    float score = hits[i].score;
-                    int rank = i + 1;
+                    TopDocs topDocs = searcher.search(query, count);
+                    ScoreDoc[] hits = topDocs.scoreDocs;
 
-                    // Write the result to the file in TREC format
-                    writer.write(String.format("%s Q0 %s %d %f %s%n", queryNumber, docId, rank, score, runTag));
+                    for (int i = 0; i < hits.length; i++) {
+                        Document doc = searcher.doc(hits[i].doc);
+                        String docId = doc.get("docId");
+                        float score = hits[i].score;
+                        int rank = i + 1;
+
+                        // Write the result to the file in TREC format
+                        writer.write(String.format("%s Q0 %s %d %f %s%n", queryNumber, docId, rank, score, runTag));
+                    }
+                } catch (BooleanQuery.TooManyClauses e) {
+                    System.err.println("Query " + queryNumber + " exceeds the maximum number of clauses allowed. Re-run the program and adjust MaxClauseCount!");
+                    e.printStackTrace();
+
                 }
+
             }
         }
     }
+
 
     private static Similarity getSimilarity(String rule) {
         // Parse rule string and create Similarity accordingly

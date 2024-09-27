@@ -20,6 +20,10 @@ public class QueryLoader {
             String number = queryElement.select("number").text().trim();
             String text = queryElement.select("text").text().trim();
 
+            if (number.contains(" ")){
+                continue;
+            }
+
             queries.add(new QueryData(number, text));
         }
 
