@@ -7,9 +7,25 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.*;
+import org.apache.lucene.document.Document;
 
 public class Indexer {
+
+    private String workingDirectory;
+    private String corpusPath;
+    private String indexPath;
+    private String stopwordsPath;
+    private String fieldsPath;
+
     public Indexer(String workingDirectory, String corpusPath, String indexPath, String stopwordsPath, String fieldsPath) {
+        this.workingDirectory = workingDirectory;
+        this.corpusPath = corpusPath;
+        this.indexPath = indexPath;
+        this.stopwordsPath = stopwordsPath;
+        this.fieldsPath = fieldsPath;
+    }
+
+    public boolean index(){
         try {
             // Load stopwords
 //            System.out.println("Loading stopwords...");
@@ -33,10 +49,10 @@ public class Indexer {
 
             // Parse and index documents
 //            System.out.println("Parsing and indexing documents...");
-            List<org.apache.lucene.document.Document> documents = TrecTextParser.parseDocuments(workingDirectory, corpusPath, fields);
+            List<Document> documents = TrecTextParser.parseDocuments(workingDirectory, corpusPath, fields);
 
             int docCount = 0;
-            for (org.apache.lucene.document.Document doc : documents) {
+            for (Document doc : documents) {
                 writer.addDocument(doc);
                 docCount++;
                 if (docCount % 1000 == 0) {
@@ -50,7 +66,10 @@ public class Indexer {
 
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
+
 }
 

@@ -12,7 +12,6 @@ public class QueryLoader {
     public static List<QueryData> loadQueries(String queryFilePath) throws Exception {
         List<QueryData> queries = new ArrayList<>();
 
-        System.out.println("Parsing query file: " + queryFilePath);
         File file = new File(queryFilePath);
         org.jsoup.nodes.Document doc = Jsoup.parse(file, "UTF-8");
 

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import Custom_IR.IndexPhase.Indexer;
+import Custom_IR.QueryPhase.QueryRunner;
 import org.eclipse.core.runtime.CoreException;
 
 import bluir.evaluation.Evaluation;
@@ -19,7 +20,7 @@ public class Core {
 	private final String indexLocation = Property.getInstance().WorkDir + "index";
 	private final String bugFilePath = Property.getInstance().BugFilePath;
 	private final String queryFilePath = Property.getInstance().WorkDir + "query";
-	private final String indriQueryResult = Property.getInstance().WorkDir + "indriQueryResult";
+	private final String resultLocation = Property.getInstance().WorkDir + "result";
 	private final String workDir = Property.getInstance().WorkDir;
 	private int topN = Property.getInstance().topN;
 
@@ -30,8 +31,8 @@ public class Core {
 			return;
 		if (!index())
 			return;
-//		if (!retrieve())
-//			return;
+		if (!retrieve())
+			return;
 //		if (!evaluation())
 //			return;
 
@@ -40,9 +41,9 @@ public class Core {
 
 	boolean createQueryIndex() {
 		try {
-			System.out.println("create query...");
+			System.out.println("creating query...");
 			int repoSize = QueryExtractor.extractSumDesField(bugFilePath, queryFilePath);
-			System.out.println(repoSize + " created successfully!");
+			System.out.println(repoSize + " queries where created successfully!");
 		} catch (IOException e) {
 			System.out.println("Please check your bug repo or query file path...");
 			return false;
@@ -83,13 +84,14 @@ public class Core {
 
 			// todo: this path must be changed for each device accordingly
 			// Paths to the stopwords and fields files
-			String stopwordsPath = "stopwords";
+			String stopwordsFile = "stopwords";
 			String fieldsFile = "fields";
 
-			new Indexer(workDir, docsLocation, indexLocation, stopwordsPath, fieldsFile);
+			Indexer indexer= new Indexer(workDir, docsLocation, indexLocation, stopwordsFile, fieldsFile);
+			if (!indexer.index()) {
+				return false;
+			}
 
-
-			System.out.println("Indexing completed successfully!");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("Error occurs while working with file IO");
@@ -100,59 +102,49 @@ public class Core {
 			System.err.println("Stopping Execution....");
 			return false;
 		}
+
+		System.out.println("Indexing completed successfully!");
 		return true;
 	}
 
 
-	boolean retrieve() {
-		System.out.print("Retrieval is in progress...");
-
-		BufferedWriter bw = null;
+	boolean retrieve(){
 		try {
+			System.out.println("Retrieval is in progress...");
 
-			// Docker command to run IndriRunQuery inside the Docker container
-			String command = "";
+			File resultDir = new File(resultLocation);
+			if (!resultDir.exists())
+				if (!resultDir.mkdirs())
+					throw new Exception();
 
-			System.out.println("command");
-			System.out.println(command);
+			String stopwordsFile = "stopwords";
+			String fieldsFile = "fields";
 
-			bw = new BufferedWriter(new FileWriter(this.indriQueryResult));
+			QueryRunner queryRunner = new QueryRunner(resultLocation, queryFilePath, topN, indexLocation, stopwordsFile, fieldsFile);
 
-			Process p = Runtime.getRuntime().exec(command);
-
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			String line = "";
-			while ((line = reader.readLine()) != null) {
-				bw.write(line);
-				bw.newLine();
-			}
-			p.waitFor();
-
-			System.out.println("Done!");
-
-		} catch (IOException e1) {
-			System.out.println("Problems with result file io");
-			return false;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		} finally {
-			try {
-				if (bw != null) bw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.out.println("Problems in closing results file after writing.");
+			if (!queryRunner.run()) {
 				return false;
 			}
 
 		}
+		catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Error occurs while working with file IO");
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Error occurs while working with process");
+			System.err.println("Stopping Execution....");
+			return false;
+		}
+
+		System.out.println("Retrieval completed successfully!");
 		return true;
 	}
 
 	boolean evaluation() {
 		try {
-			System.out.print("Evaluating....");
+			System.out.println("Evaluating....");
 
 			new Evaluation().evaluate();
 

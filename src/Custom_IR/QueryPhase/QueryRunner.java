@@ -1,5 +1,8 @@
 package Custom_IR.QueryPhase;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -15,44 +18,51 @@ import org.apache.lucene.store.*;
 import org.apache.lucene.queryparser.classic.*;
 
 public class QueryRunner {
+    private final String queryFilePath;
+    private int count = 100;
+    private final String indexPath;
+    private final String stopwordsPath;
+    private final String fieldsPath;
+    private static String resultLocation;
+    private final String rule = "method:tfidf,k1:1.0,b:0.3";
+    private final String runTag = "CustomIR";
 
-    public static void main(String[] args) {
-        System.out.println("Starting query execution...");
+    public QueryRunner(String resultLocation, String queryFilePath, int count, String indexPath, String stopwordsPath, String fieldsPath) {
+        this.queryFilePath = queryFilePath;
+        this.count = count;
+        this.indexPath = indexPath;
+        this.stopwordsPath = stopwordsPath;
+        this.fieldsPath = fieldsPath;
+        this.resultLocation = resultLocation;
+    }
 
-        String queryFilePath = "data/temp/BLUiR_first_Run/query";
-        int count = 100;
-        String indexPath = "data/temp/BLUiR_first_Run/index";
-        String stopwordsPath = "stopwords";
-        String fieldsPath = "fields";
-        String rule = "method:tfidf,k1:1.0,b:0.3";
-        String runTag = "myRun"; // You can change this to any identifier
-
+    public boolean run() {
         try {
             // Load stopwords
-            System.out.println("Loading stopwords...");
+//            System.out.println("Loading stopwords...");
             Set<String> stopwords = StopwordsLoader.loadStopwords(stopwordsPath);
 
             // Load fields
-            System.out.println("Loading fields...");
+//            System.out.println("Loading fields...");
             Set<String> fields = FieldsLoader.loadFields(fieldsPath);
 
             // Create analyzer
-            System.out.println("Creating analyzer...");
+//            System.out.println("Creating analyzer...");
             Analyzer analyzer = new CustomAnalyzer(stopwords);
 
             // Open index
-            System.out.println("Opening index at: " + indexPath);
+//            System.out.println("Opening index at: " + indexPath);
             Directory dir = FSDirectory.open(Paths.get(indexPath));
             DirectoryReader reader = DirectoryReader.open(dir);
             IndexSearcher searcher = new IndexSearcher(reader);
 
             // Set similarity
-            System.out.println("Setting similarity...");
+//            System.out.println("Setting similarity...");
             Similarity similarity = getSimilarity(rule);
             searcher.setSimilarity(similarity);
 
             // Parse queries
-            System.out.println("Parsing queries from file: " + queryFilePath);
+//            System.out.println("Parsing queries from file: " + queryFilePath);
             List<QueryData> queries = QueryLoader.loadQueries(queryFilePath);
 
             // Execute queries
@@ -60,14 +70,14 @@ public class QueryRunner {
             executeQueries(searcher, analyzer, queries, count, fields, runTag);
 
             // Close reader
-            System.out.println("Closing index reader...");
+//            System.out.println("Closing index reader...");
             reader.close();
-
-            System.out.println("Query execution completed successfully.");
 
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     private static void executeQueries(IndexSearcher searcher, Analyzer analyzer, List<QueryData> queries, int count, Set<String> fields, String runTag) throws Exception {
@@ -77,23 +87,25 @@ public class QueryRunner {
             String queryNumber = queryData.getNumber();
             String queryText = queryData.getText();
 
-            System.out.println("Executing query number: " + queryNumber);
+            // Create a new file for the query results, named with the queryNumber
+            File resultsFile = new File(Paths.get(resultLocation, queryNumber + ".txt").toString());
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(resultsFile))) {
 
-            MultiFieldQueryParser parser = new MultiFieldQueryParser(fieldsArray, analyzer);
+                MultiFieldQueryParser parser = new MultiFieldQueryParser(fieldsArray, analyzer);
+                Query query = parser.parse(QueryParser.escape(queryText));
 
-            Query query = parser.parse(QueryParser.escape(queryText));
+                TopDocs topDocs = searcher.search(query, count);
+                ScoreDoc[] hits = topDocs.scoreDocs;
 
-            TopDocs topDocs = searcher.search(query, count);
-            ScoreDoc[] hits = topDocs.scoreDocs;
+                for (int i = 0; i < hits.length; i++) {
+                    Document doc = searcher.doc(hits[i].doc);
+                    String docId = doc.get("docId");
+                    float score = hits[i].score;
+                    int rank = i + 1;
 
-            for (int i = 0; i < hits.length; i++) {
-                Document doc = searcher.doc(hits[i].doc);
-                String docId = doc.get("docId");
-                float score = hits[i].score;
-                int rank = i + 1;
-
-                // Output in TREC format
-                System.out.println(String.format("%s Q0 %s %d %f %s", queryNumber, docId, rank, score, runTag));
+                    // Write the result to the file in TREC format
+                    writer.write(String.format("%s Q0 %s %d %f %s%n", queryNumber, docId, rank, score, runTag));
+                }
             }
         }
     }

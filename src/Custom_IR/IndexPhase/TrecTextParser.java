@@ -3,17 +3,16 @@ package Custom_IR.IndexPhase;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
+import org.apache.lucene.document.Document;
 
 import org.apache.lucene.document.*;
 
 public class TrecTextParser {
 
-    public static List<org.apache.lucene.document.Document> parseDocuments(String workingDirectory, String corpusPath, Set<String> fields) throws IOException {
-        List<org.apache.lucene.document.Document> documents = new ArrayList<>();
+    public static List<Document> parseDocuments(String workingDirectory, String corpusPath, Set<String> fields) throws IOException {
+
+        List<Document> documents = new ArrayList<>();
         // Create a logger instance
         final Logger logger = Logger.getLogger(TrecTextParser.class.getName());
 
@@ -23,8 +22,17 @@ public class TrecTextParser {
             fileHandler.setFormatter(new SimpleFormatter());
             logger.addHandler(fileHandler);
 
+            // Remove the default console handler to prevent printing to the terminal
+            Logger rootLogger = Logger.getLogger("");
+            Handler[] handlers = rootLogger.getHandlers();
+            for (Handler handler : handlers) {
+                if (handler instanceof ConsoleHandler) {
+                    rootLogger.removeHandler(handler);
+                }
+            }
+
             // Set the logger level to INFO (or adjust as needed)
-            logger.setLevel(Level.SEVERE);
+            logger.setLevel(Level.INFO);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -36,7 +44,7 @@ public class TrecTextParser {
                     try {
                         logger.info("Parsing file: " + filePath);
                         String content = new String(Files.readAllBytes(filePath));
-                        List<org.apache.lucene.document.Document> docsInFile = parseTrecText(content, fields);
+                        List<Document> docsInFile = parseTrecText(content, fields);
                         documents.addAll(docsInFile);
                         logger.info("Parsed " + docsInFile.size() + " documents from file.");
                     } catch (IOException e) {
@@ -48,8 +56,8 @@ public class TrecTextParser {
         return documents;
     }
 
-    private static List<org.apache.lucene.document.Document> parseTrecText(String content, Set<String> fields) {
-        List<org.apache.lucene.document.Document> documents = new ArrayList<>();
+    private static List<Document> parseTrecText(String content, Set<String> fields) {
+        List<Document> documents = new ArrayList<>();
 
         String[] docs = content.split("<DOC>");
         for (String docContent : docs) {
