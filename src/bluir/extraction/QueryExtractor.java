@@ -32,30 +32,10 @@ public class QueryExtractor
 			bw.write("\t<query>\n\t\t<number>" + bug.getBugId() + "</number>");
 			bw.newLine();
 
-			bw.write("\t\t<text> #weight(" +
+			String text = bug.getSummary() + " " + bug.getDescription();
+			text = text.replace("\n", " ");
 
-					addField(PreProcessor.process(bug.getSummary()), "class", 1.0D) + " " +
-					addField(PreProcessor.process1(bug.getSummary()), "class", 1.0D) + " " +
-					addField(PreProcessor.process(bug.getDescription()), "class", 1.0D) + " " +
-					addField(PreProcessor.process1(bug.getDescription()), "class", 1.0D) + " " +
-
-					addField(PreProcessor.process(bug.getSummary()), "method", 1.0D) + " " +
-					addField(PreProcessor.process1(bug.getSummary()), "method", 1.0D) + " " +
-					addField(PreProcessor.process(bug.getDescription()), "method", 1.0D) + " " +
-					addField(PreProcessor.process1(bug.getDescription()), "method", 1.0D) + " " +
-
-					addField(PreProcessor.process(bug.getSummary()), "identifier", 1.0D) + " " +
-					addField(PreProcessor.process1(bug.getSummary()), "identifier", 1.0D) + " " +
-					addField(PreProcessor.process(bug.getDescription()), "identifier", 1.0D) + " " +
-					addField(PreProcessor.process1(bug.getDescription()), "identifier", 1.0D) + " " +
-
-					addField(PreProcessor.process(bug.getSummary()), "comments", 1.0D) + " " +
-
-					addField(PreProcessor.process(bug.getDescription()), "comments", 1.0D) + " " +
-
-
-
-					")</text>\n\t</query>");
+			bw.write("\t\t<text> " + text + " </text>\n\t</query>");
 			bw.newLine();
 		}
 
@@ -90,7 +70,7 @@ public class QueryExtractor
 		String[] queryParts = str.split(" ");
 		String[] arrayOfString1; int j = (arrayOfString1 = queryParts).length; for (int i = 0; i < j; i++) { String eachPart = arrayOfString1[i];
 		if (!eachPart.equals("")) {
-			eachPart = weight + " " + eachPart + ".(" + fieldName + ")";
+			eachPart = eachPart + ".(" + fieldName + ")";
 			addedStr = addedStr + eachPart + " ";
 		}
 	}

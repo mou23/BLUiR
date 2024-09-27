@@ -1,6 +1,5 @@
 package bluir.utility;
 
-import java.io.PrintStream;
 
 public class PreProcessor {
 	public static String process(String query) { String processedQuery = "";
