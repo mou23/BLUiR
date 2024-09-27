@@ -13,7 +13,7 @@ public class FieldsLoader {
     public static Set<String> loadFields(String fieldsFilePath) throws Exception {
         Set<String> fields = new HashSet<>();
 
-        System.out.println("Parsing fields file: " + fieldsFilePath);
+//        System.out.println("Parsing fields file: " + fieldsFilePath);
         File file = new File(fieldsFilePath);
         Document doc = Jsoup.parse(file, "UTF-8");
 
@@ -23,7 +23,7 @@ public class FieldsLoader {
             fields.add(fieldName);
         }
 
-        System.out.println("Loaded " + fields.size() + " fields.");
+//        System.out.println("Loaded " + fields.size() + " fields.");
         return fields;
     }
 }

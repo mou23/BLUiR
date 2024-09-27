@@ -3,31 +3,48 @@ package Custom_IR.IndexPhase;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import org.apache.lucene.document.*;
 
-
 public class TrecTextParser {
 
-    public static List<org.apache.lucene.document.Document> parseDocuments(String corpusPath, Set<String> fields) throws IOException {
+    public static List<org.apache.lucene.document.Document> parseDocuments(String workingDirectory, String corpusPath, Set<String> fields) throws IOException {
         List<org.apache.lucene.document.Document> documents = new ArrayList<>();
+        // Create a logger instance
+        final Logger logger = Logger.getLogger(TrecTextParser.class.getName());
 
-        System.out.println("Walking through corpus directory: " + corpusPath);
+        try {
+            // Set up the file handler and formatter
+            FileHandler fileHandler = new FileHandler(workingDirectory+"/parsed_docs.log", true);
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
+
+            // Set the logger level to INFO (or adjust as needed)
+            logger.setLevel(Level.SEVERE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("Walking through corpus directory: " + corpusPath);
         Files.walk(Paths.get(corpusPath))
                 .filter(Files::isRegularFile)
                 .forEach(filePath -> {
                     try {
-                        System.out.println("Parsing file: " + filePath);
+                        logger.info("Parsing file: " + filePath);
                         String content = new String(Files.readAllBytes(filePath));
                         List<org.apache.lucene.document.Document> docsInFile = parseTrecText(content, fields);
                         documents.addAll(docsInFile);
-                        System.out.println("Parsed " + docsInFile.size() + " documents from file.");
+                        logger.info("Parsed " + docsInFile.size() + " documents from file.");
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.log(Level.SEVERE, "Error while parsing file: " + filePath, e);
                     }
                 });
 
-        System.out.println("Total documents parsed: " + documents.size());
+        logger.info("Total documents parsed: " + documents.size());
         return documents;
     }
 

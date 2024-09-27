@@ -13,7 +13,7 @@ public class StopwordsLoader {
     public static Set<String> loadStopwords(String stopwordsFilePath) throws Exception {
         Set<String> stopwords = new HashSet<>();
 
-        System.out.println("Parsing stopwords file: " + stopwordsFilePath);
+//        System.out.println("Parsing stopwords file: " + stopwordsFilePath);
         File file = new File(stopwordsFilePath);
         Document doc = Jsoup.parse(file, "UTF-8");
 
