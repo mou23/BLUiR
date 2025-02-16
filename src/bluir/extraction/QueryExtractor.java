@@ -10,41 +10,30 @@ import java.io.PrintStream;
 import java.util.List;
 
 
-
-
-
-
 public class QueryExtractor
 {
-	public static int extractSumDesField(String XMLPath, String outputPath) throws IOException
+	public static int extractSumDesField(BugReport bug, String outputPath) throws IOException
 	{
-		XMLParser parser = new XMLParser();
-		List<BugReport> bugRepo = parser.createRepositoryList(XMLPath);
-
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outputPath));
 		bw.write("<parameters>");
 		bw.newLine();
-		for (int i = 0; i < bugRepo.size(); i++)
-		{
 
-			BugReport bug = (BugReport)bugRepo.get(i);
+		bw.write("\t<query>\n\t\t<number>" + bug.getBugId() + "</number>");
+		bw.newLine();
 
-			bw.write("\t<query>\n\t\t<number>" + bug.getBugId() + "</number>");
-			bw.newLine();
+		String text = PreProcessor.process1(bug.getSummary()) + " " + PreProcessor.process1(bug.getDescription());
+		text = text.replace("\n", " ");
 
-			String text = bug.getSummary() + " " + bug.getDescription();
-			text = text.replace("\n", " ");
-
-			bw.write("\t\t<text> " + text + " </text>\n\t</query>");
-			bw.newLine();
-		}
+		bw.write("\t\t<text> " + text + " </text>\n\t</query>");
+		bw.newLine();
+		
 
 		bw.write("</parameters>");
 		bw.newLine();
 
 		bw.close();
 
-		return bugRepo.size();
+		return 1;
 	}
 
 

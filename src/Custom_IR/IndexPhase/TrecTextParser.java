@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 import java.util.logging.*;
-import org.apache.lucene.document.Document;
 
 import org.apache.lucene.document.*;
 
@@ -15,10 +14,10 @@ public class TrecTextParser {
         List<Document> documents = new ArrayList<>();
         // Create a logger instance
         final Logger logger = Logger.getLogger(TrecTextParser.class.getName());
-
+        FileHandler fileHandler;
         try {
             // Set up the file handler and formatter
-            FileHandler fileHandler = new FileHandler(workingDirectory+"/parsed_docs.log", true);
+            fileHandler = new FileHandler(workingDirectory+"/parsed_docs.log", true);
             fileHandler.setFormatter(new SimpleFormatter());
             logger.addHandler(fileHandler);
 
@@ -33,26 +32,28 @@ public class TrecTextParser {
 
             // Set the logger level to INFO (or adjust as needed)
             logger.setLevel(Level.INFO);
+            logger.info("Walking through corpus directory: " + corpusPath);
+            Files.walk(Paths.get(corpusPath))
+                    .filter(Files::isRegularFile)
+                    .forEach(filePath -> {
+                        try {
+                            logger.info("Parsing file: " + filePath);
+                            String content = new String(Files.readAllBytes(filePath));
+                            List<Document> docsInFile = parseTrecText(content, fields);
+                            documents.addAll(docsInFile);
+                            logger.info("Parsed " + docsInFile.size() + " documents from file.");
+                        } catch (IOException e) {
+                            logger.log(Level.SEVERE, "Error while parsing file: " + filePath, e);
+                        }
+                    });
+
+            logger.info("Total documents parsed: " + documents.size());
+            fileHandler.close();
+            logger.removeHandler(fileHandler);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        logger.info("Walking through corpus directory: " + corpusPath);
-        Files.walk(Paths.get(corpusPath))
-                .filter(Files::isRegularFile)
-                .forEach(filePath -> {
-                    try {
-                        logger.info("Parsing file: " + filePath);
-                        String content = new String(Files.readAllBytes(filePath));
-                        List<Document> docsInFile = parseTrecText(content, fields);
-                        documents.addAll(docsInFile);
-                        logger.info("Parsed " + docsInFile.size() + " documents from file.");
-                    } catch (IOException e) {
-                        logger.log(Level.SEVERE, "Error while parsing file: " + filePath, e);
-                    }
-                });
-
-        logger.info("Total documents parsed: " + documents.size());
         return documents;
     }
 
@@ -77,7 +78,8 @@ public class TrecTextParser {
             for (Map.Entry<String, String> entry : fieldContents.entrySet()) {
                 luceneDoc.add(new TextField(entry.getKey(), entry.getValue(), Field.Store.YES));
             }
-
+//            System.out.println("file "+ docno);
+//            System.out.println("content "+ luceneDoc);
             documents.add(luceneDoc);
         }
 

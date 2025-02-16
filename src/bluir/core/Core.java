@@ -2,14 +2,19 @@ package bluir.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import Custom_IR.IndexPhase.Indexer;
 import Custom_IR.QueryPhase.QueryRunner;
 import org.eclipse.core.runtime.CoreException;
 
+import bluir.entity.BugReport;
 import bluir.evaluation.Evaluation;
 import bluir.extraction.FactExtractor;
 import bluir.extraction.QueryExtractor;
+import bluir.parser.XMLParser;
+import bluir.utility.CommitCheckout;
+
 
 public class Core {
 	private final String docsLocation = Property.getInstance().WorkDir + "docs";
@@ -21,24 +26,47 @@ public class Core {
 	private int topN = Property.getInstance().topN;
 
 	public void process() {
-		if (!createQueryIndex())
-			return;
-		if (!createDocs())
-			return;
-		if (!index())
-			return;
-		if (!retrieve())
-			return;
-//		if (!evaluation())
-//			return;
+		XMLParser parser = new XMLParser();
+		List<BugReport> bugRepo = parser.createRepositoryList(bugFilePath);
+		System.out.println("total bugs " + bugRepo.size());
+		for(int i=0; i<bugRepo.size(); i++) {
+			BugReport bug = bugRepo.get(i);
+//			System.out.println(bug.getBugId());
+//			if(bug.getBugId().equals("391384") == false) {
+//				continue;
+//			}
+				
+			if (!createQueryIndex(bug))
+				return;
+			try
+			{
+				Property.getInstance().commitHash = bug.getCommit();
+				System.out.println("checkout to one commit before fix...");
+				new CommitCheckout().create();
+			}
+			catch (Exception z) {
+				z.printStackTrace();
+				return;
+			}
+			if (!createDocs())
+				return;
+			if (!index())
+				return;
+			if (!retrieve())
+				return;
+			if (!evaluation(bug))
+				return;
+//			if(i==5)
+//				break;
+		}
 
 		System.out.println("finished");
 	}
 
-	boolean createQueryIndex() {
+	boolean createQueryIndex(BugReport bug) {
 		try {
 			System.out.println("creating query...");
-			int repoSize = QueryExtractor.extractSumDesField(bugFilePath, queryFilePath);
+			int repoSize = QueryExtractor.extractSumDesField(bug, queryFilePath);
 			System.out.println(repoSize + " queries where created successfully!");
 		} catch (IOException e) {
 			System.out.println("Please check your bug repo or query file path...");
@@ -138,11 +166,11 @@ public class Core {
 		return true;
 	}
 
-	boolean evaluation() {
+	boolean evaluation(BugReport bug) {
 		try {
 			System.out.println("Evaluating....");
 
-			new Evaluation().evaluate();
+			new Evaluation().evaluate(bug);
 
 			System.out.println("Done!");
 

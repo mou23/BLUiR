@@ -51,10 +51,10 @@ public class FactExtractor
 				return false;
 			}
 		}
-		//경로 보정
+		
 		if (!codeDirectory.endsWith("\\"))	codeDirectory = codeDirectory + "\\";
 		codeDirectory = codeDirectory.replace("\\", "/");
-		
+		System.out.println("codeDirectory " + codeDirectory);
 		//File listing
 		FileDetector detector = new FileDetector("java"); // java file Filter
 		File[] files = detector.detect(codeDirectory);
@@ -69,11 +69,11 @@ public class FactExtractor
 			String filePath = srcFile.getAbsolutePath();
 			String sourceFileName = srcFile.getName();
 			String relativeFilePath;
+//			System.out.println("filePath " + filePath);
 			
-			//경로 보정
 			filePath = filePath.replace("\\", "/");
 			relativeFilePath = filePath.substring(codeDirectory.length());
-			
+//			System.out.println("relativeFilePath " + relativeFilePath);
 			//Source code File Load
 			fDocument = new Document(StructureDiffUtils.readFile(filePath));
 						
@@ -96,26 +96,28 @@ public class FactExtractor
 			GenericVisitorFact visitor = new GenericVisitorFact();
 			cu.accept(visitor);
 			
-			//package값이 없는 경우에 대한 처리 (추가)
+			//package
 			String fqn = relativeFilePath;
 			PackageDeclaration packageNameObj = cu.getPackage();
-			if (packageNameObj!=null && !Property.getInstance().ProjectName.startsWith("ASPECTJ")) 
+			if (packageNameObj!=null && !Property.getInstance().ProjectName.startsWith("ASPECTJ")) {
 				fqn = packageNameObj.getName().getFullyQualifiedName() + "." + sourceFileName;
-			
+			}
+				
+//			System.out.println("fqn " + fqn);
 			//String packageName = cu.getPackage().getName().getFullyQualifiedName();
 			//System.out.println("Extracted Class FQN: " + packageName + "." + sourceFileName);
 			
-			//파일 ID정보 저장.
-			bwIndex.write(fileCount + "\t" + relativeFilePath + "\t" + fqn);
+			
+			bwIndex.write(fileCount + "," + relativeFilePath + "," + fqn);
 			bwIndex.newLine();
 			bwIndex.flush();
 			//System.out.println(fileCount+": "+relativeFilePath + "\t" + fqn);
 			
-			//DOC정보 생성
-			bw.write("<DOC>\n<DOCNO>" + fqn + " </DOCNO>\n<text>");
+			//DOC
+			bw.write("<DOC>\n<DOCNO>" + relativeFilePath + " </DOCNO>\n<text>");
 			bw.newLine();
 			
-			//클래스 정보 추출 및 저장
+			
 			List<String> classes = visitor.getClassNames();
 			bw.write("<class>");
 			bw.newLine();
@@ -128,7 +130,7 @@ public class FactExtractor
 			bw.newLine();
 			
 			
-			//method 정보 추출
+			//method
 			List<String> methods = visitor.getMethodNames();
 			bw.write("<method>");
 			bw.newLine();			
@@ -146,7 +148,7 @@ public class FactExtractor
 			
 			List<String> idNames = visitor.getIdentifierNames();
 			
-			//식별자 정보 추출
+			
 			bw.write("<identifier>");
 			bw.newLine();
 			for (String idName : idNames)
@@ -157,7 +159,7 @@ public class FactExtractor
 			bw.write("</identifier>");
 			bw.newLine();
 			
-			//comments 정보 추출
+			//comments
 			List<ASTNode> comments = cu.getCommentList();
 			bw.write("<comments>");
 			bw.newLine();

@@ -8,15 +8,15 @@ import java.io.IOException;
 
 public class BLUiR {
 	public static void main(String[] args) {
-		args = new String[8];
-		args[0]="-b";
-		args[1]="/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/data/dataset/Eclipse_Platform_UI.xml";
-		args[2]="-s";
-		args[3]="/Users/armin/Desktop/platform/eclipse.platform.ui";
-		args[4]="-w";
-		args[5]="/Users/armin/Desktop/UCI/bug-localization-project/Codes/Adjusted-BLUiR/data/temp";
-		args[6]="-n";
-		args[7]="first_Run";
+//		args = new String[8];
+//		args[0]="-b";
+//		args[1]="D:/FL/dataset/jdt-updated-data.xml";
+//		args[2]="-s";
+//		args[3]="D:/FL/dataset/jdt";
+//		args[4]="-w";
+//		args[5]="D:/FL/dataset/temp";
+//		args[6]="-n";
+//		args[7]="run_jdt";
 		try {
 			if (args.length == 0)
 				throw null;
@@ -117,11 +117,11 @@ public class BLUiR {
 			isLegal = false;
 		}
 		
-		String indriPath = loadSettings();
-		if (indriPath == null){
-			System.err.println("Cannot load Settings.txt File. Please let the file locate root path.");
-			isLegal = false;
-		}
+//		String indriPath = loadSettings();
+//		if (indriPath == null){
+//			System.err.println("Cannot load Settings.txt File. Please let the file locate root path.");
+//			isLegal = false;
+//		}
 		
 		//Check this state.
 		if (!isLegal) return isLegal;
@@ -138,43 +138,10 @@ public class BLUiR {
 		if (!dir.exists())
 			dir.mkdirs();
 		outputFile = workingPath.substring(0, workingPath.length() - 1) + "_output.txt";
-
-		Property.createInstance(workingName.toUpperCase(), bugFilePath, sourceCodeDir, workingPath, alpha, outputFile, indriPath);
+		System.out.println("outputFile" + outputFile);
+		Property.createInstance(workingName.toUpperCase(), bugFilePath, sourceCodeDir, workingPath, alpha, outputFile);
 		// dir.getAbsolutePath() ==> workingPath
 
 		return isLegal;
-	}
-	
-	/**
-	 * Settings ������ �о ����.
-	 * @return
-	 */
-	static private String loadSettings(){
-		String indriPath = null;
-		try {
-			BufferedReader br = new BufferedReader(new FileReader("Settings.txt"));
-			try {
-				indriPath = br.readLine().split("=")[1].trim();
-				if (!indriPath.endsWith(File.separator))
-					indriPath = indriPath + File.separator;
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.out.println("Problems with Settings file!");
-				indriPath = null;
-			}
-			finally{
-				try {
-					br.close();
-				} catch (IOException e) {
-					System.out.println("Problems with Settings file!");
-					indriPath = null;
-				}
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println("Settings File Not Found!");
-			indriPath = null;
-		}
-		return indriPath;
 	}
 }

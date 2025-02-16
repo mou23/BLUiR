@@ -105,7 +105,9 @@ public class QueryRunner {
 
                     TopDocs topDocs = searcher.search(query, count);
                     ScoreDoc[] hits = topDocs.scoreDocs;
-
+                    
+                    System.out.println("Query Number: " + queryNumber + ", Max Count: " + count + ", Hits Length: " + hits.length);
+                    
                     for (int i = 0; i < hits.length; i++) {
                         Document doc = searcher.doc(hits[i].doc);
                         String docId = doc.get("docId");
@@ -113,7 +115,7 @@ public class QueryRunner {
                         int rank = i + 1;
 
                         // Write the result to the file in TREC format
-                        writer.write(String.format("%s Q0 %s %d %f %s%n", queryNumber, docId, rank, score, runTag));
+                        writer.write(String.format("%s,Q0,%s,%d,%f,%s%n", queryNumber, docId, rank, score, runTag));
                     }
                 } catch (BooleanQuery.TooManyClauses e) {
                     System.err.println("Query " + queryNumber + " exceeds the maximum number of clauses allowed. Re-run the program and adjust MaxClauseCount!");

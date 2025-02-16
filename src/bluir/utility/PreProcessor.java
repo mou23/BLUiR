@@ -20,7 +20,7 @@ public class PreProcessor {
 		
 		for (int i = 0; i < words.length; i++) {
 			if (words[i].length() > 2) {
-				processedQuery = processedQuery.trim() + " " + words[i];
+				processedQuery = processedQuery.trim() + " " + transform(words[i]);
 			}
 		}
 		return processedQuery;

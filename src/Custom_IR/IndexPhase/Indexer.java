@@ -53,6 +53,7 @@ public class Indexer {
 
             int docCount = 0;
             for (Document doc : documents) {
+//            	System.out.println(doc);
                 writer.addDocument(doc);
                 docCount++;
                 if (docCount % 1000 == 0) {

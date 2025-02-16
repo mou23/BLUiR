@@ -99,6 +99,7 @@ public class XMLParser {
 
 							BugReport bugReport = new BugReport();
 							String bugId = getColumnValue("bug_id", tableElement);
+//							System.out.println(bugId);
 							bugReport.setBugId(bugId);
 
 							String summary = getColumnValue("summary", tableElement);
@@ -106,6 +107,12 @@ public class XMLParser {
 
 							String description = getColumnValue("description", tableElement);
 							bugReport.setDescription(description);
+							
+							String commit = getColumnValue("commit", tableElement);
+							bugReport.setCommit(commit);
+							
+							String commit_timestamp = getColumnValue("commit_timestamp", tableElement);
+							bugReport.setFixedDate(Long.parseLong(commit_timestamp));
 
 							String files = getColumnValue("files", tableElement);
 							Set<String> fileSet = parseFiles(files);
@@ -116,11 +123,14 @@ public class XMLParser {
 					}
 				}
 			}
+			bugRepository.sort((bug1, bug2) -> Long.compare(bug1.getFixedDate(), bug2.getFixedDate()));
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
-
-		return bugRepository;
+		int totalSize = bugRepository.size();
+		int splitIndex = (int) Math.ceil(totalSize * 0.6);
+		
+		return bugRepository.subList(splitIndex, totalSize);
 	}
 
 	private static String getColumnValue(String columnName, Element tableElement) {
@@ -140,11 +150,13 @@ public class XMLParser {
 	private static Set<String> parseFiles(String files) {
 		Set<String> fileSet = new HashSet<>();
 		if (files != null && !files.isEmpty()) {
-			String[] fileArray = files.split(",");
-			for (String file : fileArray) {
-				fileSet.add(file.trim().replaceAll("/", "."));
+			String[] fixedFiles = files.split(".java");
+			for (String file : fixedFiles) {
+				if(file.length()>0)
+					fileSet.add(file.trim()+".java");
 			}
 		}
+//		System.out.println(fileSet);
 		return fileSet;
 	}
 

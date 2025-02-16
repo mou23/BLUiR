@@ -6,6 +6,8 @@ public class BugReport {
 	private String bugId;
 	private String summary;
 	private String description;
+	private String commit;
+	private long fixedTimestamp;
 	private Set<String> fixedFiles;
 
 	public BugReport() {
@@ -34,6 +36,22 @@ public class BugReport {
 		this.summary = summary;
 	}
 
+	public String getCommit() {
+		return commit;
+	}
+	
+	public void setCommit(String commit) {
+		this.commit = commit;
+	}
+	
+	public long getFixedDate() {
+		return fixedTimestamp;
+	}
+	
+	public void setFixedDate(long fixedTimestamp) {
+		this.fixedTimestamp = fixedTimestamp;
+	}
+	
 	public String getDescription() {
 		return description;
 	}
