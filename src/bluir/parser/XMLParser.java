@@ -150,7 +150,7 @@ public class XMLParser {
 	private static Set<String> parseFiles(String files) {
 		Set<String> fileSet = new HashSet<>();
 		if (files != null && !files.isEmpty()) {
-			String[] fixedFiles = files.split(".java");
+			String[] fixedFiles = files.split("\\.java");
 			for (String file : fixedFiles) {
 				if(file.length()>0)
 					fileSet.add(file.trim()+".java");
