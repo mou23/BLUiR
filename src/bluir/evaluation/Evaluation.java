@@ -44,34 +44,30 @@ public class Evaluation {
 		nameTable = new Hashtable<Integer, String>();
 	}
 
-	/**
-	 * query 결과파일을 로드하여 정답과 대조
-	 * @return
-	 * @throws IOException
-	 */
+	
 	public boolean evaluate(BugReport bug) throws IOException
 	{
 		fixedTable = getFixedFileTable(bug);
 		Hashtable<Integer, Hashtable<Integer, Rank>> results = getResultTable(bug.getBugId());
 		
 //		System.out.println("results"+results);
-		//출력파일 준비
+
 		FileWriter outputWriter = new FileWriter(this.outputFilePath);
 		File resultDir = new File(recommendedPath);
 		if (!resultDir.exists()) 
 			resultDir.mkdirs();
 		
-		//각 버그리포트에 대해서,....
+
 		Set<Integer> bugIDS = results.keySet();
 		for (Integer bugID : bugIDS)
 		{ 
-			//추천결과 정보 로드
+
 			Hashtable<Integer, Rank> recommends = results.get(bugID);
 			
 			ArrayList<Rank> recommendsList = new ArrayList<Rank>(recommends.values());
 			recommendsList.sort((Rank o1, Rank o2)->o1.rank-o2.rank);	// order of rank in ASC
 //			System.out.println("recommendsList"+recommendsList);
-			//추천결과 출력
+
 			FileWriter writer = new FileWriter(recommendedPath + bugID + ".txt");
 			for (Rank rank : recommendsList) {
 				if(nameTable.containsKey(rank.fileID)) {
@@ -80,7 +76,7 @@ public class Evaluation {
 			}
 			writer.close();
 			
-			//정답파일이 존재하는지 확인.
+
 			TreeSet<String> fileSet = fixedTable.get(bugID);
 //			System.out.println("fileSet" + fileSet);
 			for(String fileName : fileSet)
@@ -102,12 +98,6 @@ public class Evaluation {
 	}
 
 	
-	/**
-	 * Indri에서 추천된 결과를 로드.
-	 * @return
-	 * @throws NumberFormatException
-	 * @throws IOException
-	 */
 	private Hashtable<Integer, Hashtable<Integer, Rank>> getResultTable(String bugId) throws NumberFormatException, IOException {
 		String line = null;
 		int fileIndex = 0;
@@ -162,11 +152,7 @@ public class Evaluation {
 		
 	}
 	
-	/**
-	 * 지정된 버그파일(XML)에서 fixed File list정보를 얻음
-	 * XML파일은 여러개의 버그리포트가 하나로 정리된 파일을 말함. 
-	 * @return
-	 */
+	
 	private Hashtable<Integer, TreeSet<String>> getFixedFileTable(BugReport bug) {
 		
 		Hashtable<Integer, TreeSet<String>> fixTable = new Hashtable<Integer, TreeSet<String>>();
